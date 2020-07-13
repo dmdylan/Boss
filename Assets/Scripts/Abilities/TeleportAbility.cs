@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class TeleportAbility : BaseAbility
 {
@@ -32,21 +33,24 @@ public class TeleportAbility : BaseAbility
     public override IEnumerator UseAbility()
     {
         isOffCooldown = false;
+        var isSelectingLocation = true;
+        GameObject teleporterMarker = Instantiate(teleportMarker);
 
         Ray ray = abilityCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 15f))
+        while (isSelectingLocation)
         {
-            GameObject teleporterMarker = Instantiate(teleportMarker);
-            //this code crashes unity
-            while (hit.collider)
+            if (Physics.Raycast(ray, out RaycastHit hit, 15f))
             {
-                teleporterMarker.transform.position = hit.point;      
+                teleporterMarker.transform.position = hit.point;         
+            }
+
+            if (Input.GetKeyDown(KeyCode.Mouse1))
+            {
+                isSelectingLocation = false;
             }
         }
-
-
+        
         //transform.DOMove(transform.position + transform.forward * teleportDistance, teleportTravelTime).SetEase(Ease.Flash);
         yield return new WaitForEndOfFrame();
         StartCoroutine(StartCooldown());
