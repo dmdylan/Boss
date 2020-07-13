@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.WSA;
 
 public class TeleportAbility : BaseAbility
 {
@@ -17,6 +18,8 @@ public class TeleportAbility : BaseAbility
     {
         Cooldown = coolDown;
         abilityCamera = Camera.main;
+        teleportMarker = Instantiate(teleportMarker);
+        teleportMarker.SetActive(false);
     }
 
     // Update is called once per frame
@@ -27,28 +30,47 @@ public class TeleportAbility : BaseAbility
         if(!isOffCooldown) { return; }
 
         StartCoroutine(UseAbility()); //Need vector3 position from camera;
-        //Ray ray = Camera.main.ray
     }
 
     public override IEnumerator UseAbility()
     {
         isOffCooldown = false;
         var isSelectingLocation = true;
-        GameObject teleporterMarker = Instantiate(teleportMarker);
-
-        Ray ray = abilityCamera.ScreenPointToRay(Input.mousePosition);
+        LayerMask layer = LayerMask.GetMask("Ground");
 
         while (isSelectingLocation)
         {
-            if (Physics.Raycast(ray, out RaycastHit hit, 15f))
+            Ray ray = abilityCamera.ScreenPointToRay(Input.mousePosition);
+            Debug.DrawRay(abilityCamera.transform.position, abilityCamera.transform.forward*15f, Color.red);
+            Debug.Log("In the loop");
+
+            if (Physics.Raycast(ray, out RaycastHit hit, 15f, layer))
             {
-                teleporterMarker.transform.position = hit.point;         
+                Debug.Log("RayCast Hit Somthing");
+                teleportMarker.SetActive(true);
+                teleportMarker.transform.position = hit.point;         
+            }
+            else
+            {
+                Debug.Log("Raycast hitting nothing");
+                teleportMarker.SetActive(false);
             }
 
             if (Input.GetKeyDown(KeyCode.Mouse1))
             {
+                Debug.Log("Right mouse clicked");
                 isSelectingLocation = false;
+                teleportMarker.SetActive(false);
             }
+
+            if (Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                isSelectingLocation = false;
+                transform.DOMove(teleportMarker.transform.position, 0).SetEase(Ease.Flash);
+                teleportMarker.SetActive(false);
+            }
+
+            yield return null;
         }
         
         //transform.DOMove(transform.position + transform.forward * teleportDistance, teleportTravelTime).SetEase(Ease.Flash);
