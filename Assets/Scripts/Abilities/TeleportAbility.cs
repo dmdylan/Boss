@@ -35,6 +35,8 @@ public class TeleportAbility : BaseAbility
     {
         isOffCooldown = false;
         var isSelectingLocation = true;
+        //TODO: Set event to actually do something
+        GameEvents.Instance.TeleportAbilityInUse();
         LayerMask layer = LayerMask.GetMask("Ground");
 
         while (isSelectingLocation)
